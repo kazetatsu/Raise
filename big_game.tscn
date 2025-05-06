@@ -1,3 +1,73 @@
-[gd_scene format=3 uid="uid://b6e1746fqajvt"]
+[gd_scene load_steps=10 format=3 uid="uid://b6e1746fqajvt"]
+
+[ext_resource type="Script" path="res://big_game.gd" id="1_2m2nh"]
+[ext_resource type="Script" path="res://dummy.gd" id="2_nexei"]
+[ext_resource type="Script" path="res://praiser.gd" id="4_bivkv"]
+[ext_resource type="Script" path="res://rhythm.gd" id="4_leiq1"]
+[ext_resource type="Texture2D" uid="uid://dll84kynjjlr0" path="res://kami_praiser_body.png" id="5_yoe4r"]
+[ext_resource type="Texture2D" uid="uid://1nkinb6a0oar" path="res://kami_praiser_head.png" id="6_t6atm"]
+[ext_resource type="Script" path="res://sweeper.gd" id="7_mmmf4"]
+[ext_resource type="Texture2D" uid="uid://ccxwmt44yne58" path="res://kami_sweeper.png" id="8_ckfek"]
+[ext_resource type="Script" path="res://intermission.gd" id="9_ycgic"]
 
 [node name="BigGame" type="Node2D"]
+script = ExtResource("1_2m2nh")
+
+[node name="Rhythm" type="Node" parent="."]
+script = ExtResource("4_leiq1")
+bpm = 140.0
+
+[node name="Dummy" type="Node2D" parent="."]
+script = ExtResource("2_nexei")
+
+[node name="Praiser" type="Node2D" parent="."]
+script = ExtResource("4_bivkv")
+leave_pos = Vector2(-110, 524)
+come_pos = Vector2(130, 522)
+bottom_pos = Vector2(-11, 20)
+
+[node name="Kami" type="Sprite2D" parent="Praiser"]
+position = Vector2(-96, 524)
+texture = ExtResource("5_yoe4r")
+
+[node name="Head" type="Sprite2D" parent="Praiser/Kami"]
+position = Vector2(-11, 20)
+texture = ExtResource("6_t6atm")
+
+[node name="Sweeper" type="Node2D" parent="."]
+script = ExtResource("7_mmmf4")
+
+[node name="Kami" type="Sprite2D" parent="Sweeper"]
+position = Vector2(580, 868)
+rotation = -1.3439
+scale = Vector2(2.87109, 2.87109)
+texture = ExtResource("8_ckfek")
+offset = Vector2(0, -200)
+
+[node name="Intermission" type="Node2D" parent="."]
+script = ExtResource("9_ycgic")
+come_pos = Vector2(788, 433)
+leave_pos = Vector2(1247, 428)
+top_pos = Vector2(-22, -39)
+bottom_pos = Vector2(-23, -5)
+
+[node name="Kami" type="Sprite2D" parent="Intermission"]
+position = Vector2(1247, 428)
+scale = Vector2(1.78906, 1.78906)
+texture = ExtResource("8_ckfek")
+
+[node name="Head" type="Sprite2D" parent="Intermission/Kami"]
+position = Vector2(-23.476, -5.03057)
+scale = Vector2(0.790393, 0.790393)
+texture = ExtResource("6_t6atm")
+
+[connection signal="mg_miss" from="." to="Praiser" method="_on_mg_miss"]
+[connection signal="start_im" from="." to="Intermission" method="_on_bg_start_im"]
+[connection signal="want_finish_mg" from="." to="Praiser" method="_on_bg_want_finish_mg"]
+[connection signal="want_start_mg" from="." to="Sweeper" method="_on_bg_want_start_mg"]
+[connection signal="just_left" from="Praiser" to="." method="_on_praiser_just_left"]
+[connection signal="just_left" from="Praiser" to="Sweeper" method="_on_praiser_just_left"]
+[connection signal="standby_finish_mg" from="Sweeper" to="." method="_on_kami_standby_finish_mg"]
+[connection signal="standby_start_mg" from="Sweeper" to="." method="_on_kami_standby_start_mg"]
+[connection signal="standby_start_mg" from="Sweeper" to="Praiser" method="_on_sweeper_standby_start_mg"]
+[connection signal="finish" from="Intermission" to="." method="_on_im_finish"]
