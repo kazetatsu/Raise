@@ -16,4 +16,3 @@ func _process(delta):
 	if t >= 1.0:
 		beat += 1
 		t -= 1.0
-		print(t)
