@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcaesvgujwoxw"]
+
+[ext_resource type="Texture2D" uid="uid://cxiw5reoqpdf0" path="res://curtain_part.png" id="1_8g4hg"]
+
+[node name="CurtainPart" type="Sprite2D"]
+scale = Vector2(4, 4)
+texture = ExtResource("1_8g4hg")
+centered = false
