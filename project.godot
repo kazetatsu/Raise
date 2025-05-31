@@ -15,6 +15,11 @@ run/main_scene="res://big_game.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[display]
+
+window/size/viewport_width=1024
+window/size/viewport_height=576
+
 [input]
 
 W={
@@ -25,5 +30,4 @@ W={
 
 [rendering]
 
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
+renderer/rendering_method="mobile"
