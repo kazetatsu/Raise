@@ -4,32 +4,35 @@ signal want_start_mg # mg = mini game
 signal want_finish_mg
 signal mg_miss
 signal start_mg
-signal start_im(node_mg:Node2D) # im = intermission
+signal start_im() # im = intermission
+signal decided_next_mg(node_mg:Node2D)
 
 var rest_mg_num:int
 var node_mg:Node
 
-func instantiate_mg() -> int:
+var mg_index2code = ["00", "af", "ct"]
+
+func instantiate_mg():
 	var mg_index = randi_range(0,0)
-	# node_mg = load("res://mg%03d/mini_game.tscn" % mg_index).instantiate()
+	var mg_code = mg_index2code[mg_index]
+	# node_mg = load("res://mg_%s/mini_game.tscn" % mg_code).instantiate()
 	# add_child(node_mg)
 	node_mg.finish.connect(_on_mg_finish)
-	start_mg.connect(node_mg._on_start)
-	return mg_index
+	start_mg.connect(node_mg._on_bg_start_mg)
+	decided_next_mg.emit(node_mg)
 
 
 func disconnect_mg():
 	node_mg.finish.disconnect(_on_mg_finish)
-	start_mg.disconnect(node_mg._on_start)
+	start_mg.disconnect(node_mg._on_bg_start_mg)
 
 
 func _ready():
 	print("start big game")
 	rest_mg_num = 4
-	node_mg = $Dummy
-	var mg_index = instantiate_mg()
+	node_mg = $MiniGameStab
+	instantiate_mg()
 	print("rest: 4")
-	want_start_mg.emit()
 
 
 func _on_mg_finish():
@@ -42,7 +45,7 @@ func _on_kami_standby_start_mg():
 	print("start mini game")
 
 
-func _on_im_finish():
+func _on_intermission_finish():
 	want_start_mg.emit()
 	print("intermission finished")
 
@@ -57,8 +60,3 @@ func _on_kami_standby_finish_mg():
 		var mg_index = instantiate_mg()
 		start_im.emit(node_mg)
 		print("rest: %d" % rest_mg_num)
-	
-
-
-func _on_praiser_just_left():
-	pass # Replace with function body.

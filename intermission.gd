@@ -9,77 +9,143 @@ enum State {
 	LEAVE,
 	NONE
 }
-	
+
 var state = State.NONE
 
 const r = 0.3
 var rhythm:Node
 var check_beat:int
 var after_beat:int # Length of beats in State.AFTER
+
+var mg_code:String
 var creature_name:String
 
-var kami:Node
-@export var come_pos:Vector2
-@export var leave_pos:Vector2
-var kami_head:Node
-@export var top_pos:Vector2
-@export var bottom_pos:Vector2
+var kami:Node2D
+@export var kami_come_pos:Vector2
+@export var kami_leave_pos:Vector2
+
+var kami_before:Node2D
+var kami_after:Node2D
+
+var seriph:Node2D
+var seriph_label:Label
+@export var seriph_come_pos:Vector2
+@export var seriph_leave_pos:Vector2
+
+var creature:Sprite2D
+
+var anim:AnimationPlayer
+var tween:Tween
 
 func _ready():
 	rhythm = get_node("/root/BigGame/Rhythm")
+
 	kami = $Kami
-	kami_head = $Kami/Head
-	kami.hide()
+	kami_before = $Kami/Before
+	kami_after  = $Kami/After
+
+	seriph = $Seriph
+	seriph_label = $Seriph/Label
+
+	creature = $Creature
+
+	anim = $AnimationPlayer
+
+	kami.position = kami_come_pos
+	kami_before.show()
+	kami_after.hide()
+	seriph.position = seriph_come_pos
+	seriph_label.hide()
+
+
+func into_before():
+	kami.position = kami_come_pos
+	kami_before.show()
+	seriph.position = seriph_come_pos
+	seriph_label.text = "Your next life is..."
+	seriph_label.show()
+	check_beat = rhythm.beat + 1
+	state = State.BEFORE
 
 
 func _process(_delta):
-	match state:
-		State.COME:
-			if rhythm.beat <= check_beat:
-				var t = rhythm.t
-				t = - t*t + 2.0*t
-				kami.position = t * come_pos + (1.0 - t) * leave_pos
-			else:
-				kami.position = come_pos
-				check_beat = rhythm.beat + 1
-				state = State.BEFORE
-		State.BEFORE:
-			if rhythm.beat <= check_beat:
-				var t = rhythm.t
-				if t < r:
-					t /= r
-					kami_head.position = t * bottom_pos + (1.0 - t) * top_pos
-				else:
-					t = (t - r) / (1.0 - r)
-					kami_head.position = t * top_pos + (1.0 - t) * bottom_pos
-			else:
-				check_beat = rhythm.beat + after_beat
-				kami_head.position = top_pos
-				state = State.AFTER
-		State.AFTER:
-			if rhythm.beat > check_beat:
-				check_beat = rhythm.beat
-				state = State.LEAVE
-		State.LEAVE:
-			if rhythm.beat <= check_beat:
-				var t = rhythm.t
-				kami.position = t * leave_pos + (1.0 - t) * come_pos
-			else:
-				kami.position = leave_pos
-				kami.hide()
-				finish.emit()
-				state = State.NONE
-		_:
-			pass
+	# COME -> BEFORE
+	if state == State.COME and rhythm.beat > check_beat:
+		into_before()
+
+	# BEFORE -> AFTER
+	if state == State.BEFORE and rhythm.beat > check_beat:
+		kami_before.hide()
+		kami_after.show()
+
+		seriph_label.text = creature_name + " !"
+		anim.play("smoke")
+
+		var img = Image.load_from_file("res://mg_%s/predator.png" % mg_code)
+		creature.texture = ImageTexture.create_from_image(img)
+
+		check_beat = rhythm.beat + after_beat
+		state = State.AFTER
+
+	# AFTER -> LEAVE
+	if state == State.AFTER and rhythm.beat > check_beat:
+		seriph_label.hide()
+
+		if tween: tween.kill()
+		tween = create_tween()
+		tween.set_trans(Tween.TRANS_QUAD)
+		tween.set_ease(Tween.EASE_IN)
+		tween.tween_property(kami, "position", kami_leave_pos, rhythm.period)
+		tween.tween_property(seriph, "position", seriph_leave_pos, rhythm.period)
+
+		check_beat = rhythm.beat
+		state = State.LEAVE
+
+	# LEAVE -> NONE
+	if state == State.LEAVE and rhythm.beat > check_beat:
+		var img = Image.load_from_file("res://mg_%s/predator.png")
+		creature.texture = ImageTexture.create_from_image(img)
+		creature.hide()
+
+		seriph.hide()
+		kami_after.hide()
+		finish.emit()
+		state = State.NONE
 
 
-func _on_bg_start_im(node_mg:Node2D):
+func _on_bg_decided_next_mg(node_mg:Node2D):
 	after_beat = node_mg.after_beat()
+	mg_code = node_mg.mg_code()
 	creature_name = node_mg.creature_name()
+
+
+func _on_bg_start_im():
+	kami_before.show()
+	seriph.show()
+
+	if tween: tween.kill()
+	tween = create_tween()
+	tween.set_trans(Tween.TRANS_QUAD)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(kami, "position", kami_come_pos, rhythm.period)
+	tween.tween_property(seriph, "position", seriph_come_pos, rhythm.period)
+
 	check_beat = rhythm.beat
-
-	kami.position = leave_pos
-	kami_head.position = top_pos
-	kami.show()
-
 	state = State.COME
+
+
+func _on_sweeper_standby_start_mg():
+	self.hide()
+	var img = Image.load_from_file("res://mg_%s/prey.png" % mg_code)
+	creature.texture = ImageTexture.create_from_image(img)
+
+
+func _on_praiser_just_left():
+	self.show()
+
+
+func _on_intro_finish():
+	# Start intermission from the middle
+	# NONE -> BEFORE
+	into_before()
+	show()
