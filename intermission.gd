@@ -32,8 +32,6 @@ var seriph_label:Label
 @export var seriph_come_pos:Vector2
 @export var seriph_leave_pos:Vector2
 
-var creature:Sprite2D
-
 var anim:AnimationPlayer
 var tween:Tween
 
@@ -47,9 +45,12 @@ func _ready():
 	seriph = $Seriph
 	seriph_label = $Seriph/Label
 
-	creature = $Creature
-
 	anim = $AnimationPlayer
+
+	$Smoke/Part1.hide()
+	$Smoke/Part2.hide()
+	$Smoke/Part3.hide()
+	$Smoke/Part4.hide()
 
 	kami.position = kami_come_pos
 	kami_before.show()
@@ -81,9 +82,6 @@ func _process(_delta):
 		seriph_label.text = creature_name + " !"
 		anim.play("smoke")
 
-		var img = Image.load_from_file("res://mg_%s/predator.png" % mg_code)
-		creature.texture = ImageTexture.create_from_image(img)
-
 		check_beat = rhythm.beat + after_beat
 		state = State.AFTER
 
@@ -95,6 +93,7 @@ func _process(_delta):
 		tween = create_tween()
 		tween.set_trans(Tween.TRANS_QUAD)
 		tween.set_ease(Tween.EASE_IN)
+		tween.set_parallel()
 		tween.tween_property(kami, "position", kami_leave_pos, rhythm.period)
 		tween.tween_property(seriph, "position", seriph_leave_pos, rhythm.period)
 
@@ -103,14 +102,15 @@ func _process(_delta):
 
 	# LEAVE -> NONE
 	if state == State.LEAVE and rhythm.beat > check_beat:
-		var img = Image.load_from_file("res://mg_%s/predator.png")
-		creature.texture = ImageTexture.create_from_image(img)
-		creature.hide()
-
 		seriph.hide()
 		kami_after.hide()
 		finish.emit()
 		state = State.NONE
+
+
+func change_img():
+	var img = Image.load_from_file("res://mg_%s/predator.png" % mg_code)
+	$Creature.texture = ImageTexture.create_from_image(img)
 
 
 func _on_bg_decided_next_mg(node_mg:Node2D):
@@ -127,6 +127,7 @@ func _on_bg_start_im():
 	tween = create_tween()
 	tween.set_trans(Tween.TRANS_QUAD)
 	tween.set_ease(Tween.EASE_OUT)
+	tween.set_parallel()
 	tween.tween_property(kami, "position", kami_come_pos, rhythm.period)
 	tween.tween_property(seriph, "position", seriph_come_pos, rhythm.period)
 
@@ -135,9 +136,9 @@ func _on_bg_start_im():
 
 
 func _on_sweeper_standby_start_mg():
-	self.hide()
-	var img = Image.load_from_file("res://mg_%s/prey.png" % mg_code)
-	creature.texture = ImageTexture.create_from_image(img)
+	hide()
+	var img = Image.load_from_file("res://mg_%s/pray.png" % mg_code)
+	$Creature.texture = ImageTexture.create_from_image(img)
 
 
 func _on_praiser_just_left():
