@@ -27,6 +27,7 @@ func _ready():
 	var tween = create_tween()
 	tween.set_trans(Tween.TRANS_LINEAR)
 	tween.tween_property(self, "alpha", 0.0, 2 * rhythm.period)
+	tween.tween_callback(tween.kill)
 
 
 func _process(_delta):
