@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3 uid="uid://cx6yn0ujhtr83"]
+
+[ext_resource type="Script" path="res://mg_00/mini_game.gd" id="1_ctaui"]
+
+[node name="MG00" type="Node2D"]
+script = ExtResource("1_ctaui")
+
+[node name="Message" type="Label" parent="."]
+offset_left = 152.0
+offset_top = 174.0
+offset_right = 444.0
+offset_bottom = 231.0
+text = "Now waiting"
+
+[node name="Timer" type="Timer" parent="."]
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
