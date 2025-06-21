@@ -26,16 +26,9 @@ enum State {
 var state = State.NONE
 
 var aim_line:Node
-#var bag:Node
-#var bullet:Node
-
-#var should_check_hit = false
 
 func _ready():
 	aim_line = $AimLine
-	#bag = $Bag
-	#bullet = $Bullet
-	#hit_timer = $HitTimer
 
 	ang = PI / 4.0
 	aim_line.rotation = -ang
@@ -51,15 +44,7 @@ func _process(delta):
 
 			if Input.is_action_just_pressed("attack"):
 				aim_line.hide()
-
 				shoot.emit(ang)
-				"""
-				bullet.rotation = -ang
-				bullet.start()
-
-				should_check_hit = true
-				"""
-
 				t = freeze_time
 				state = State.ATTACK
 		State.ATTACK:
@@ -70,23 +55,6 @@ func _process(delta):
 		_:
 			pass
 
-
-"""
-func _physics_process(_delta):
-	if should_check_hit:
-		var start_pos = bullet.position
-		var end_pos = bullet.position + 1000.0 * Vector2.from_angle(ang)
-
-		var space_state = get_world_2d().direct_space_state
-		var query = PhysicsRayQueryParameters2D.create(start_pos, end_pos)
-		var result = space_state.intersect_ray(query)
-		if result.has("position"):
-			var dist = (result["position"] - start_pos).length()
-			var t_fly = (dist / bullet.speed)
-			hit_timer.start(t_fly)
-
-		should_check_hit = false
-"""
 
 func _on_bg_start_mg():
 	state = State.AIM
